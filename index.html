@@ -5,69 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spinning Cubes with Infinite Zoom</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; font-family: 'Orbitron', sans-serif; }
     canvas { display: block; }
+    #cubeCount {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: red;
+      font-size: 75px;
+    }
   </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap">
 </head>
 <body>
+  <div id="cubeCount">Cube Count: 1</div>
   <script type="module">
     import * as THREE from 'https://threejs.org/build/three.module.js';
 
-    // Set up the scene
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Create a cube
     const cubeGeometry = new THREE.BoxGeometry();
     const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
     const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
     scene.add(cube);
 
-    // Set up the camera position
     camera.position.z = 5;
 
-    // Add mouse click event listener
     document.addEventListener('click', onClick);
-
-    // Add mousewheel event listener for zooming
     document.addEventListener('wheel', onWheel);
 
-    // Function to handle mouse click
+    let cubeCount = 1;
+    const cubeCountElement = document.getElementById('cubeCount');
+
     function onClick(event) {
-      // Get the mouse click position
       const mouse = new THREE.Vector2();
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-      // Raycasting to check if the mouse intersects with the cube
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(scene.children);
 
       if (intersects.length > 0) {
-        // If the cube is clicked, break it into smaller cubes
         breakCube(intersects[0].object);
       }
     }
 
-    // Function to handle mousewheel for zooming
     function onWheel(event) {
-      // Adjust the camera position based on the scroll direction
       camera.position.z += event.deltaY * 0.005;
-
-      // Limit the zoom range
       if (camera.position.z < 2) camera.position.z = 2;
       if (camera.position.z > 10) camera.position.z = 10;
     }
 
-    // Function to break the cube into smaller cubes
     function breakCube(parentCube) {
-      parentCube.geometry.dispose(); // Dispose of the current geometry
+      parentCube.geometry.dispose();
 
-      // Create smaller cubes
       const smallerCubes = [];
       const smallerCubeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 
@@ -75,15 +71,12 @@
         const smallerCube = new THREE.Mesh(new THREE.BoxGeometry(), smallerCubeMaterial);
         smallerCubes.push(smallerCube);
         scene.add(smallerCube);
-
-        // Set initial rotation speed for smaller cubes
         smallerCube.rotationSpeed = {
           x: (Math.random() - 0.5) * 0.2,
           y: (Math.random() - 0.5) * 0.2,
         };
       }
 
-      // Position the smaller cubes
       const positions = [
         { x: -1, y: 1, z: -1 },
         { x: 1, y: 1, z: -1 },
@@ -103,15 +96,14 @@
         );
       }
 
-      // Remove the parent cube from the scene
       scene.remove(parentCube);
+      cubeCount += 7;
+      cubeCountElement.textContent = `Cube Count: ${cubeCount}`;
     }
 
-    // Animation loop
     function animate() {
       requestAnimationFrame(animate);
 
-      // Rotate the cubes
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
 
@@ -122,11 +114,9 @@
         }
       });
 
-      // Render the scene
       renderer.render(scene, camera);
     }
 
-    // Start the animation loop
     animate();
   </script>
 </body>
